@@ -19,8 +19,3 @@
 #include "Host/HostAddonParameter.hpp" 
 #include "Host/HostAddonScheduler.hpp" // Depends on TaskScheduler (https://github.com/arkhipenko/TaskScheduler)
 #include "Host/HostAddonVirtualPad.hpp" // Depends on Windows.Gaming.Input and VirtualPad (https://github.com/GitMoDu/VirtualPad)
-
-namespace ArduinoWindowsHost
-{
-	using SchedulerHost = HostAddonScheduler<LoopHost>;
-}
