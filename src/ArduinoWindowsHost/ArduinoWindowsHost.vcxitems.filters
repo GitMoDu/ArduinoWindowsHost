@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="HAL">
+      <UniqueIdentifier>{c42441b2-0c98-4cdc-bc10-7434dc270476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bridge">
+      <UniqueIdentifier>{32520ca3-327f-4c67-baeb-687e27c174c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bridge\EGFX">
+      <UniqueIdentifier>{978bf1ea-b718-4e7b-9bec-ce35538001a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Host">
+      <UniqueIdentifier>{dcc473a3-833a-4ac8-a1eb-76d72a64ad9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{49d2f89f-9d51-4684-8327-6e8c6bb5f269}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonEgfx.hpp">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonIntegerWorld.hpp">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonParameter.hpp">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonScheduler.hpp">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonVirtualPad.hpp">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostThreadManager.hpp">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\LoopHost.hpp">
+      <Filter>Host</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\HAL\Arduino.h">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\HAL\ArduinoIo.hpp">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\HAL\ArduinoSerialPort.hpp">
+      <Filter>HAL</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Bridge\Egfx\HostScreenDriver.hpp">
+      <Filter>Bridge\EGFX</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Bridge\Egfx\ISurfaceSink.h">
+      <Filter>Bridge\EGFX</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Arduino.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\ArduinoIntegerWorldWindows.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\ArduinoWindowsHost.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)README.md" />
+  </ItemGroup>
+</Project>

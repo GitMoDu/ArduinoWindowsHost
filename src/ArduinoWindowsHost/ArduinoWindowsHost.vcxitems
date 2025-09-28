@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{aee1b828-5425-4bad-ab4b-eafebcf67dd5}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Arduino.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\ArduinoIntegerWorldWindows.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\ArduinoWindowsHost.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Bridge\Egfx\HostScreenDriver.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Bridge\Egfx\ISurfaceSink.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\HAL\Arduino.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\HAL\ArduinoIo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\HAL\ArduinoSerialPort.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonEgfx.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonIntegerWorld.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonParameter.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonScheduler.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostAddonVirtualPad.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\HostThreadManager.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\LoopHost.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)README.md" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,1 @@
+.\nuget pack ".\ArduinoWindowsHost.nuspec" -BasePath "." -OutputDirectory ".\artifacts" -Verbosity detailed

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>ArduinoWindowsHost</id>
+    <version>1.0.0</version>
+    <authors>GitMoDu (batatas\t@\tgmail\tcom)</authors>
+    <title>Arduino Windows Host</title>
+    <description>Headers for the ArduinoWindowsHost namespace. Injects include path via props. Works with packages.config and PackageReference.</description>
+    <readme>README.md</readme>
+    <!-- Intentionally no <packageTypes> to avoid tooling rejection -->
+  </metadata>
+  <files>
+    <!-- Props (import include dir). Place in all conventional locations to support both NuGet modes -->
+    <file src="README.md" target="" />
+    <file src="build\native\ArduinoWindowsHost.props" target="build\native\ArduinoWindowsHost.props" />
+    <file src="build\native\ArduinoWindowsHost.props" target="build\ArduinoWindowsHost.props" />
+    <file src="build\native\ArduinoWindowsHost.props" target="buildTransitive\ArduinoWindowsHost.props" />
+
+    <!-- Headers -->
+    <file src="build\native\include\**\*.*" target="build\native\include" />
+  </files>
+</package>
