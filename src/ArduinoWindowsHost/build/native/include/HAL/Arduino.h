@@ -103,9 +103,12 @@ namespace ArduinoWindowsHost
 			State::BootMicros = static_cast<uint32_t>(duration_cast<microseconds>(system_clock::now().time_since_epoch()).count());
 
 			State::IoHal.reset();
-			Serial.clearBuffer();
-			Serial1.clearBuffer();
-			Serial2.clearBuffer();
+			Serial.flushRx();
+			Serial.flushTx();
+			Serial1.flushRx();
+			Serial1.flushTx();
+			Serial2.flushRx();
+			Serial2.flushTx();
 		}
 	}
 }
