@@ -1,55 +1,44 @@
 # ArduinoWindowsHost
 
-Lightweight host framework for running Arduino-style `setup()`/`loop()` code on Windows. Provides a `LoopHost` base class and a small thread manager (`HostThreadManager` / `TemplateHostManager`) to run hosts on a background thread while exposing start/stop lifecycle hooks.
+A lightweight framework for hosting Arduino‑style sketches on Windows (UWP / C++/WinRT).  
+It provides an emulated environment with `setup()`, `loop()`, and `serialEvent()` support, plus serial I/O integration.
 
-## Key pieces
+---
 
-- `LoopHost` — base class for Arduino-like hosts (override `OnStart`, `OnRun`, `OnStop`).
-- `HostThreadManager.hpp` / `TemplateHostManager<T>` — manages host lifetime and thread spawning/joining.
-- Designed for C++14 and Visual Studio 2022.
+## Overview
 
-## Installation
+`ArduinoWindowsHost` allows you to run Arduino sketches directly on Windows without hardware.  
+It is designed for:
 
-1. Install the NuGet package (example):
-   - Using the Package Manager Console:
-     ```
-     Install-Package ArduinoWindowsHost
-     ```
-   - Or use __Manage NuGet Packages__ on your project in Visual Studio.
+- Rapid prototyping of Arduino logic on desktop
+- Debugging sketches with full Visual Studio tooling
+- Integrating Arduino‑style code into UWP apps
 
-2. Locate the package files that were copied into your project's packages directory. The NuGet install will place the class/header files under your project's package root (for example: `packages/ArduinoWindowsHost.<version>/content` or `packages/ArduinoWindowsHost.<version>/include`). Note the exact relative path from your `.vcxproj`.
+---
 
-3. Add that relative path to your project include directories so the compiler can find the headers:
-   - Preferred: Open __Project Properties__ -> __Configuration Properties__ -> __C/C++__ -> __Additional Include Directories__ and add the relative path (for example `..\packages\ArduinoWindowsHost.1.0.0\include` or `$(ProjectDir)packages\ArduinoWindowsHost.1.0.0\include`).
-   - Alternatively you can set it under __Project Properties__ -> __Configuration Properties__ -> __VC++ Directories__ -> __Include Directories__.
+## Example Project: ArduinoBlink
 
-4. Example path (adjust version and exact subfolder as needed):
-   - If headers were copied to `packages\ArduinoWindowsHost.1.0.0\include` relative to the project:
-     - Add `..\packages\ArduinoWindowsHost.1.0.0\include` to __Additional Include Directories__.
+An example project, [ArduinoBlink](https://github.com/GitMoDu/ArduinoBlink), demonstrates how to use this host framework.
 
-Tips:
-- If you want a stable reference without hard-coding the version, define a user macro (Project Properties -> __Configuration Properties__ -> __User Macros__) such as `ArduinoWindowsHostDir` and set it to the package folder, then use `$(ArduinoWindowsHostDir)\include` in __Additional Include Directories__.
-- If the package uses a different layout, point your include directory to whichever folder contains the `.hpp`/`.h` files.
+![ArduinoBlink demo](Examples/ArduinoBlink/media/ArduinoBlinkWinRT.gif)
 
+Features of the Blink sample:
 
-## NuGet packaging
+- Implements `setup()`, `loop()`, and `serialEvent()`
+- Toggles the built‑in LED and prints alternating Tick/Tock messages
+- Provides a live UI with:
+  - Arduino Uno board rendering
+  - LED indicators (Power, Built‑In, TX, RX)
+  - Integrated serial monitor with input/output
+  - Start/Stop and Reset controls
 
-- The repository includes a packaging helper script `NugetPack.cmd` at the project root.
+---
 
-- The script runs the exact NuGet pack command below to create the package and place output in `.\artifacts`:
+## Getting Started
 
-- To create the package from the project root:
-  1. Open a shell in the project root (for example the __Developer Command Prompt for VS 2022__ or PowerShell).
-  2. Run the packaging script:
-     - PowerShell:
-       ```
-       .\NugetPack.cmd
-       ```
-     - CMD:
-       ```
-       NugetPack.cmd
-       ```
-  3. The script executes the command shown above and produces a `.nupkg` file under `.\artifacts`.
+1. Clone this repository.
+2. Add it as a dependency to your UWP / C++/WinRT project.
+3. Subclass `LoopHost` to implement your Arduino‑style sketch.
+4. Call `setup()`, `loop()`, and optionally `serialEvent()` as you would on hardware.
 
-Notes:
-- The script requires `nuget` to be available for the command to run (for example `nuget.exe` on __PATH__ or otherwise accessible). If you prefer to run NuGet directly instead of the script, run the exact `nuget pack` command shown above from the project root.
+See the [ArduinoBlink example](https://github.com/GitMoDu/ArduinoBlink) for a complete reference.
