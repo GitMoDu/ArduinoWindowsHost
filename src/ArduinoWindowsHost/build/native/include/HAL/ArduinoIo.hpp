@@ -28,16 +28,20 @@ namespace ArduinoWindowsHost
 		{
 			struct PinState
 			{
-				uint8_t Mode = INPUT; // Default to input.
-				uint8_t State = LOW;  // Default to low.
+				volatile uint8_t Mode = INPUT; // Default to input.
+				volatile uint8_t State = LOW;  // Default to low.
 			};
 
 			PinState State[IO_COUNT]{};
+
+			volatile uint32_t StateId = 0;
 
 			void digitalWrite(const uint8_t pin, const WiringState state)
 			{
 				if (pin < IO_COUNT && State[pin].Mode == OUTPUT)
 					State[pin].State = state != LOW;
+
+				StateId++;
 			}
 
 			uint8_t digitalRead(const uint8_t pin) const
@@ -52,6 +56,7 @@ namespace ArduinoWindowsHost
 			{
 				if (pin < IO_COUNT)
 					State[pin].Mode = (mode == OUTPUT) * OUTPUT;
+				StateId++;
 			}
 
 			void reset()
@@ -61,6 +66,7 @@ namespace ArduinoWindowsHost
 					State[i].Mode = INPUT;
 					State[i].State = LOW;
 				}
+				StateId++;
 			}
 		};
 	}
