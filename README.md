@@ -1,6 +1,6 @@
 # ArduinoWindowsHost
 
-A lightweight framework for hosting Arduino‑style sketches on Windows (UWP / C++/WinRT).  
+A lightweight framework for hosting Arduino‑style sketches on Windows (WinRT/WinUI3/WPF).  
 It provides an emulated environment with `setup()`, `loop()`, and `serialEvent()` support, plus serial I/O integration.
 
 ---
