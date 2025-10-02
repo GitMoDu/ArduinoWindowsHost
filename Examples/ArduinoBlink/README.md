@@ -107,11 +107,12 @@ Example: echo received characters.
 
 ---
 
-## License
+## Why WinRT?
 
-MIT
+This project uses **C++/WinRT** because it gives modern C++ developers a clean projection of the Windows Runtime with full Visual Studio support. The real win isn’t just the API surface, but the **UWP packaging model**: declarative manifests, sandboxing, atomic install/uninstall, etc.  
 
----
+Even though UWP and WinUI are uncertain, the packaging model lives on, and Win32 remains the permanent compatibility layer underneath. By keeping the host logic lean and UI‑agnostic, this project benefits from WinRT’s developer comfort while staying adaptable to whatever Windows framework comes next.
+
 
 ## Attribution
 
