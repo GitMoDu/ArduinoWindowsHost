@@ -20,10 +20,14 @@ namespace ArduinoWindowsHost
 			std::this_thread::yield();
 		}
 
+		virtual void serialEvent() {};
+
 	protected:
 		std::mutex mutex{};
 
 	protected:
+		volatile uint32_t SerialStateId = UINT32_MAX;
+
 		volatile bool cancelled = false;
 		volatile bool running = false;
 
@@ -54,12 +58,23 @@ namespace ArduinoWindowsHost
 			{
 				Hal::reset();
 
+				SerialStateId = Serial.GetRxId();
+
 				setup();
 
 				setRunning(true);
 				bool wasCancelled = false;
 				while (!isCancelled())
 				{
+					if (Serial)
+					{
+						const uint32_t serialStateId = Serial.GetRxId();
+						if (serialStateId != SerialStateId)
+						{
+							SerialStateId = serialStateId;
+							serialEvent();
+						}
+					}
 					loop();
 				}
 

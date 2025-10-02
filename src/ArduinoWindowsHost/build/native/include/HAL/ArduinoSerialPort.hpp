@@ -44,7 +44,8 @@ namespace ArduinoWindowsHost
 		private:
 			std::atomic<bool> m_ready{ false }; // added
 
-			volatile uint32_t StateId = 0;
+			volatile uint32_t TxId = 0;
+			volatile uint32_t RxId = 0;
 			volatile uint32_t LastRx = 0;
 			volatile uint32_t LastTx = 0;
 
@@ -67,9 +68,14 @@ namespace ArduinoWindowsHost
 				return GetTimestamp() - LastRx;
 			}
 
-			uint32_t GetStateId() const
+			uint32_t GetRxId() const
 			{
-				return StateId;
+				return RxId;
+			}
+
+			uint32_t GetTxId() const
+			{
+				return TxId;
 			}
 
 			explicit operator bool() const noexcept
@@ -146,8 +152,8 @@ namespace ArduinoWindowsHost
 				return out;
 			}
 
-			// Clear stored lines and current assembling line.
-			void clearBuffer()
+			// Clear stored output lines and current assembling line.
+			void flusthTx()
 			{
 				std::lock_guard<std::mutex> lk(m_mutex);
 				std::fill(m_lines.begin(), m_lines.end(), std::string());
@@ -155,7 +161,7 @@ namespace ArduinoWindowsHost
 				m_count = 0;
 				m_currentLine.clear();
 
-				StateId++;
+				TxId++;
 			}
 
 			// Number of stored lines currently in buffer.
@@ -455,21 +461,16 @@ namespace ArduinoWindowsHost
 			}
 
 		private:
-			void OnStateChange()
-			{
-				StateId++;
-			}
-
 			void OnTx()
 			{
 				LastTx = GetTimestamp();
-				OnStateChange();
+				TxId++;
 			}
 
 			void OnRx()
 			{
 				LastRx = GetTimestamp();
-				OnStateChange();
+				RxId++;
 			}
 
 			static uint32_t GetTimestamp()
