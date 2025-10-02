@@ -2,6 +2,8 @@
 
 A Windows (UWP / C++/WinRT) sample that hosts an Arduino-style sketch on the desktop using the `ArduinoWindowsHost` framework.
 
+![ArduinoBlink demo](media/ArduinoBlinkWinRT.gif)
+
 It provides:
 
 - An emulated loop / setup / serialEvent environment (`LoopHost` subclass)
