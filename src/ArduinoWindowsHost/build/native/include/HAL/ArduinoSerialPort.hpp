@@ -153,7 +153,7 @@ namespace ArduinoWindowsHost
 			}
 
 			// Clear stored output lines and current assembling line.
-			void flusthTx()
+			void flushTx()
 			{
 				std::lock_guard<std::mutex> lk(m_mutex);
 				std::fill(m_lines.begin(), m_lines.end(), std::string());
