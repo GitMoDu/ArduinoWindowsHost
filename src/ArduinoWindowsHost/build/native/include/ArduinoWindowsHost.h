@@ -32,3 +32,10 @@
 #include "Host/HostAddonVirtualPad.hpp" // Depends on Windows.Gaming.Input and VirtualPad (https://github.com/GitMoDu/VirtualPad)
 #endif
 #endif
+
+// Only include the XAML serial output adapter if the platform headers are available.
+#if defined(__has_include)
+#if __has_include(<winrt/Windows.UI.Xaml.Controls.h>)
+#include "Bridge/XAML/SerialOutputAdapter.hpp"
+#endif
+#endif
