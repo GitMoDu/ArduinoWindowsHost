@@ -31,6 +31,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)build\native\include\Host\LoopHost.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)ArduinoWindowsHost.nuspec" />
     <None Include="$(MSBuildThisFileDirectory)README.md" />
   </ItemGroup>
 </Project>

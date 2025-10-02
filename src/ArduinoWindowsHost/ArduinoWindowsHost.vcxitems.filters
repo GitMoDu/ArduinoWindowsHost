@@ -66,5 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)README.md" />
+    <None Include="$(MSBuildThisFileDirectory)ArduinoWindowsHost.nuspec" />
   </ItemGroup>
 </Project>
