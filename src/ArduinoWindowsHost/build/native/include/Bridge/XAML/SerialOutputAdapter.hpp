@@ -113,6 +113,7 @@ namespace ArduinoWindowsHost
 											for (const auto& line : txData)
 											{
 												allText.append(line);
+												allText.append("\n");
 											}
 											OutputTextBlock.Text(winrt::to_hstring(allText));
 											if (AutoScrollEnabled && OutputScroller != nullptr)
