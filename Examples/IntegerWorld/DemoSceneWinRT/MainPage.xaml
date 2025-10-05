@@ -8,85 +8,68 @@
     mc:Ignorable="d">
 
     <Grid>
-        <!-- Single content row -->
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" MinHeight="480"/>
-        </Grid.RowDefinitions>
-
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="175"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Left column: fixed Start button above scrollable controls -->
-        <Grid Grid.Row="0" Grid.Column="0">
+        <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <Button x:Name="runButtonControl"
-                 IsTabStop="False"
-                 Content="Start"
-                 Width="100"
-                 HorizontalAlignment="Left"
-                 Margin="20,20,20,10"
-                 Click="runButtonControl_Click"/>
+                     Grid.Row="0"
+                     IsTabStop="False"
+                     Content="Start"
+                     Width="100"
+                     HorizontalAlignment="Left"
+                     Margin="20,10,20,10"
+                     Click="runButtonControl_Click"/>
 
             <ScrollViewer x:Name="controlsScrollable"
-                       Grid.Row="1"
-                       Margin="0,20,0,0"
-                       VerticalScrollMode="Enabled"
-                       HorizontalScrollMode="Disabled"
-                       VerticalAlignment="Stretch">
-                <StackPanel x:Name="enginePanel" Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                   Grid.Row="1"
+                   Margin="0,10,0,0"
+                   HorizontalScrollBarVisibility="Disabled"
+                   VerticalScrollBarVisibility="Auto"
+                   VerticalScrollMode="Enabled"
+                   HorizontalScrollMode="Disabled"
+                   VerticalAlignment="Stretch">
+                <StackPanel x:Name="enginePanel" Orientation="Vertical" VerticalAlignment="Top">
                     <CheckBox x:Name="checkAnimation"
-                           IsTabStop="False"
-                           IsChecked="True"
-                           Content="Animation Enable"
-                           Checked="checkAnimation_Checked"
-                           Unchecked="checkAnimation_Unchecked"
-                           Margin="20,0,0,0"/>
+                       IsTabStop="False"
+                       IsChecked="True"
+                       Content="Animation Enable"
+                       Checked="checkAnimation_Checked"
+                       Unchecked="checkAnimation_Unchecked"
+                       Margin="20,0,0,0"/>
 
-                    <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="20,20,20,10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Field-of-View" Grid.Row="0" HorizontalAlignment="Left" Grid.ColumnSpan="2" Margin="0,0,0,5"/>
-                        <Slider x:Name="parameter1Slider" Grid.Row="1" IsTabStop="False" Minimum="0" Maximum="100" Value="50" HorizontalAlignment="Stretch" Margin="0,0,20,0" ValueChanged="parameter1Slider_ValueChanged"/>
-                    </Grid>
+                    <TextBlock Text="Field-of-View" Grid.Row="0" HorizontalAlignment="Left" Margin="20,20,0,5"/>
+                    <Slider x:Name="parameter1Slider" Grid.Row="1" IsTabStop="False" Minimum="0" Maximum="100" Value="50" HorizontalAlignment="Stretch" Margin="20,00,20,10" ValueChanged="parameter1Slider_ValueChanged"/>
 
                     <TextBlock Text="Pixel Shader" FontWeight="Bold" Grid.Row="0" HorizontalAlignment="Left" Grid.ColumnSpan="2" Margin="20,0,0,10"/>
-                    <StackPanel Orientation="Vertical" Grid.Row="0" Grid.ColumnSpan="2" Margin="20,0,0,0">
-                        <RadioButton x:Name="shaderZ" Content="Z-Depth" GroupName="PixelShaderGroup" Margin="0,0,10,0"  Checked="shaderGroupChecked" />
-                        <RadioButton x:Name="shaderNormal" Content="Surface Normal" GroupName="PixelShaderGroup" Margin="0,0,10,0"  Checked="shaderGroupChecked" />
-                        <RadioButton x:Name="shaderPixel" Content="Fragment Shader" GroupName="PixelShaderGroup" Margin="0,0,10,0" IsChecked="True" Checked="shaderGroupChecked" />
-                    </StackPanel>
+                    <RadioButton x:Name="shaderZ" Content="Z-Depth" GroupName="PixelShaderGroup" Margin="20,0,10,0" Checked="shaderGroupChecked" />
+                    <RadioButton x:Name="shaderNormal" Content="Surface Normal" GroupName="PixelShaderGroup" Margin="20,0,10,0" Checked="shaderGroupChecked" />
+                    <RadioButton x:Name="shaderPixel" Content="Fragment Shader" GroupName="PixelShaderGroup" Margin="20,0,10,0" IsChecked="True" Checked="shaderGroupChecked" />
 
                     <CheckBox x:Name="checkScene" FontWeight="Bold" IsTabStop="False" IsChecked="True" Content="Light Shading" Margin="20,20,20,10" Checked="checkScene_Checked" Unchecked="checkScene_Unchecked"/>
-                    <CheckBox x:Name="checkAmbient" IsTabStop="False" IsChecked="True"  Content="Ambient" Margin="40,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked" />
-                    <CheckBox x:Name="checkEmissive" IsTabStop="False"  IsChecked="True" Content="Emissive" Margin="40,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked"  />
-                    <CheckBox x:Name="checkDiffuse" IsTabStop="False" IsChecked="True" Content="Diffuse" Margin="40,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked" />
-                    <CheckBox x:Name="checkSpecular" IsTabStop="False" IsChecked="True"  Content="Specular" Margin="40,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked"  />
+                    <CheckBox x:Name="checkAmbient" IsTabStop="False" IsChecked="True" Content="Ambient" Margin="30,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked" />
+                    <CheckBox x:Name="checkEmissive" IsTabStop="False" IsChecked="True" Content="Emissive" Margin="30,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked"  />
+                    <CheckBox x:Name="checkDiffuse" IsTabStop="False" IsChecked="True" Content="Diffuse" Margin="30,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked" />
+                    <CheckBox x:Name="checkSpecular" IsTabStop="False" IsChecked="True" Content="Specular" Margin="30,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked"  />
 
                     <TextBlock Text="Light Sources" Margin="20,10,0,10" FontWeight="Bold"/>
-                    <StackPanel x:Name="lightsPanel" Orientation="Vertical" Margin="20,0,0,0">
-                        <CheckBox x:Name="checkLight1" Content="Red Light" IsChecked="True" Margin="0,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked"/>
-                        <CheckBox x:Name="checkLight2" Content="Green Light" IsChecked="True" Margin="0,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked" />
-                        <CheckBox x:Name="checkLightGlobal" Content="Global Light" IsChecked="True" Margin="0,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked"/>
-                    </StackPanel>
+                    <CheckBox x:Name="checkLight1" Content="Red Light" IsChecked="True" Margin="20,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked"/>
+                    <CheckBox x:Name="checkLight2" Content="Green Light" IsChecked="True" Margin="20,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked" />
+                    <CheckBox x:Name="checkLightGlobal" Content="Global Light" IsChecked="True" Margin="20,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked"/>
                 </StackPanel>
             </ScrollViewer>
         </Grid>
 
         <SwapChainPanel x:Name="swapChainPanel"
-                     Grid.Row="0"
-                     Grid.Column="1"
-                     VerticalAlignment="Stretch"
-                     HorizontalAlignment="Stretch"/>
+           Grid.Column="1"
+           VerticalAlignment="Stretch"
+           HorizontalAlignment="Stretch"/>
     </Grid>
 </Page>

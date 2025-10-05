@@ -11,8 +11,6 @@ namespace winrt::DemoSceneWinRT::implementation
 {
 	MainPage::MainPage()
 	{
-		InitializeComponent();
-
 #ifndef INTEGER_WORLD_LIGHTS_SHADER_DEBUG
 		// Runtime toggles for ambient/emissive/diffuse/specular are not compiled in —
 		// disable the UI controls so they don't appear active.
