@@ -2,6 +2,7 @@
 
 // Task scheduler configuration compiler flags.
 #define _TASK_OO_CALLBACKS
+#define _TASK_DO_NOT_YIELD
 #define _TASK_TICKLESS
 #define _TASK_INLINE
 
