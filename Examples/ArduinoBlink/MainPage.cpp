@@ -8,16 +8,45 @@ using namespace winrt::Windows::UI::Xaml::Media;
 
 namespace winrt::ArduinoBlink::implementation
 {
+	MainPage::MainPage()
+		: SerialTxAdapter(Serial)
+	{
+		// Ensure XAML holds a ref to the same VM instance
+		DataContext(ViewModel());
+
+		m_vmPropertyChangedToken = ViewModel().PropertyChanged(
+			Windows::UI::Xaml::Data::PropertyChangedEventHandler{
+				[this](winrt::Windows::Foundation::IInspectable const&, Windows::UI::Xaml::Data::PropertyChangedEventArgs const& e)
+				{
+					if (e.PropertyName() == L"IsRunning")
+					{
+						// Reflect VM state into UI
+						updateArduinoHostState(ViewModel().IsRunning());
+					}
+				}
+			});
+	}
+
+	MainPage::~MainPage()
+	{
+		// Break XAML bindings and release our strong ref early
+		DataContext(nullptr);
+		m_viewModel = nullptr;
+
+		if (m_vmPropertyChangedToken.value != 0)
+		{
+			ViewModel().PropertyChanged(m_vmPropertyChangedToken);
+			m_vmPropertyChangedToken = {};
+		}
+	}
+
 	void MainPage::runButtonControl_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		if (HostManager.isRunning())
-		{
-			updateArduinoHostState(false);
-		}
-		else
-		{
-			updateArduinoHostState(true);
-		}
+		// Immediately disable the button to prevent multiple clicks.
+		runButtonControl().IsEnabled(false);
+
+		// Toggle the running state.
+		ViewModel().IsRunning(!ViewModel().IsRunning());
 	}
 
 	// Do per-frame work here (UI updates or enqueue work on UI thread).
@@ -67,11 +96,11 @@ namespace winrt::ArduinoBlink::implementation
 
 	void MainPage::updateArduinoHostState(const bool enabled)
 	{
+		// Reset all IO LEDs to off state.
 		resetIoLeds();
 
 		if (enabled)
 		{
-			HostManager.Start();
 			runButtonControl().Content(winrt::box_value(L"Stop"));
 			IoLedPower().Visibility(Visibility::Visible);
 			resetButtonHolder().Visibility(Visibility::Visible);
@@ -88,8 +117,6 @@ namespace winrt::ArduinoBlink::implementation
 		}
 		else
 		{
-			HostManager.Stop();
-
 			// unsubscribe the handler if registered
 			if (g_renderingToken.value != 0)
 			{
@@ -102,19 +129,22 @@ namespace winrt::ArduinoBlink::implementation
 			runButtonControl().Content(winrt::box_value(L"Start"));
 			serialInputButton().IsEnabled(false);
 		}
+
+		// Re-enable the run button now that the state update is complete.
+		runButtonControl().IsEnabled(true);
 	}
 
 	void MainPage::resetButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		resetButtonHolder().Visibility(Visibility::Collapsed);
-		serialInputButton().IsEnabled(false);
-		updateArduinoHostState(false);
-		updateArduinoHostState(true);
+		runButtonControl().IsEnabled(false);
+		ViewModel().IsRunning(false);
+		runButtonControl().IsEnabled(false);
+		ViewModel().IsRunning(true);
 	}
 
 	void MainPage::serialInputButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
 			auto serialText = winrt::to_string(serialInputTextBox().Text());
 
@@ -141,7 +171,7 @@ namespace winrt::ArduinoBlink::implementation
 
 	void MainPage::clearOutputButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
 			Serial.flushTx();
 		}
@@ -153,7 +183,7 @@ namespace winrt::ArduinoBlink::implementation
 
 	void MainPage::autoScrollCheckBox_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
 			SerialTxAdapter.AutoScroll(autoScrollCheckBox().IsChecked().GetBoolean());
 		}

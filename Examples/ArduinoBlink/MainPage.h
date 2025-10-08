@@ -9,15 +9,25 @@
 
 namespace winrt::ArduinoBlink::implementation
 {
-	static constexpr uint32_t SerialLedDuration = 50000;
-	static constexpr uint32_t SerialOutputPollPeriod = 50000;
-
 	struct MainPage : MainPageT<MainPage>
 	{
+		static constexpr uint32_t SerialLedDuration = 50000;
+		static constexpr uint32_t SerialOutputPollPeriod = 50000;
+
 		/// <summary>
-		/// HostManager for managing the ArduinoHost.
+		/// ArduinoHostViewModel type for the specific ArduinoHost used in this application.
 		/// </summary>
-		ArduinoWindowsHost::TemplateHostManager<ArduinoBlinkHost::ArduinoHost> HostManager{};
+		using HostViewModelType = ArduinoWindowsHost::TemplateHostViewModel<typename ArduinoBlinkHost::ArduinoHost>;
+
+		winrt::com_ptr<HostViewModelType> m_viewModel{ winrt::make_self<HostViewModelType>() };
+		HostViewModelType& ViewModel() noexcept { return *m_viewModel; }
+		HostViewModelType const& ViewModel() const noexcept { return *m_viewModel; }
+
+
+		/// <summary>
+		/// Token used to manage the registration of a property changed event handler.
+		/// </summary>
+		winrt::event_token m_vmPropertyChangedToken{};
 
 		/// <summary>
 		/// Token for the rendering event registration.
@@ -29,10 +39,9 @@ namespace winrt::ArduinoBlink::implementation
 		/// </summary>
 		ArduinoWindowsHost::SerialOutputAdapter<SerialOutputPollPeriod> SerialTxAdapter;
 
-		MainPage()
-			: SerialTxAdapter(Serial)
-		{
-		}
+		MainPage();
+
+		~MainPage();
 
 		void updateArduinoHostState(const bool enabled);
 
