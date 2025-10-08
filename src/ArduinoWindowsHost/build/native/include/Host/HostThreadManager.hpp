@@ -35,12 +35,16 @@ namespace ArduinoWindowsHost
 		{
 			if (ExecutionThread != nullptr)
 			{
-				host.OnStop();
+				// Signal the host to stop
+				host.PostAndWait([&host]() {
+					host.OnStop();
+					});
 
 				// Wait for the thread to finish
 				if (ExecutionThread->joinable())
 				{
 					ExecutionThread->join();
+
 					while (host.isRunning())
 					{
 						std::this_thread::yield();
