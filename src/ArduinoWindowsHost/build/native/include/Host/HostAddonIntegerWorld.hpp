@@ -1,10 +1,12 @@
 #pragma once
 
 
-#define INTEGER_WORLD_FRUSTUM_DEBUG // Enable engine frustum visualization in scene.
-#define INTEGER_WORLD_PERFORMANCE_DEBUG // Enable engine debug level status measuring.
+//#define INTEGER_WORLD_FRUSTUM_DEBUG // Enable engine frustum visualization in scene.
+//#define INTEGER_WORLD_PERFORMANCE_DEBUG // Enable engine debug level status measuring.S
+//
+//#define INTEGER_WORLD_LIGHTS_SHADER_DEBUG // Enable material component toggles in the lights shader.
 
-#define INTEGER_WORLD_LIGHTS_SHADER_DEBUG // Enable material component toggles in the lights shader.
+//#define INTEGER_WORLD_MOCK_OUTPUT // Use mock output surface for rendering (for testing without DirectX).
 
 #include "LoopHost.hpp"
 #include "HostAddonScheduler.hpp"
@@ -29,30 +31,42 @@ namespace ArduinoWindowsHost
 		using BaseHost::SchedulerBase;
 
 	protected:
+#if defined(INTEGER_WORLD_MOCK_OUTPUT)
+		IntegerWorld::MockOutput::OutputSurface<ScreenWidth, ScreenHeight> DirectxDrawSurface;
+#else
 		IntegerWorld::DirectXSurface<ScreenWidth, ScreenHeight> DirectxDrawSurface;
+#endif
 
 	protected:
 		IntegerWorld::EngineRenderTask<maxObjectCount, maxOrderedPrimitives, batchSize> EngineRenderer;
 
+#if defined(INTEGER_WORLD_PERFORMANCE_LOG)
+		IntegerWorld::PerformanceLogTask<1000> IntegerWorldEngineLog;
+#endif
 	public:
 		HostAddonIntegerWorld()
 			: BaseHost()
 			, DirectxDrawSurface()
 			, EngineRenderer(SchedulerBase, DirectxDrawSurface)
+#if defined(INTEGER_WORLD_PERFORMANCE_LOG)
+			, IntegerWorldEngineLog(SchedulerBase, EngineRenderer)
+#endif
 		{
 		}
 
 		void StartEngine(const winrt::Windows::UI::Xaml::Controls::SwapChainPanel& swapChainPanel)
 		{
+#if !defined(INTEGER_WORLD_MOCK_OUTPUT)
 			DirectxDrawSurface.SetSwapChainPanel(swapChainPanel);
-
+#endif
 			EngineRenderer.Start();
 		}
 
 	protected:
-		virtual void OnDestroy() override
+		virtual void setdown() override
 		{
-			BaseHost::OnDestroy();
+			BaseHost::setdown();
+			EngineRenderer.Stop();
 			DirectxDrawSurface.StopSurface();
 		}
 	};
