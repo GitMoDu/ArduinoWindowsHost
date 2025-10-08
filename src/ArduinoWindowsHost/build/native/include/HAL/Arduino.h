@@ -49,6 +49,11 @@ namespace ArduinoWindowsHost
 
 			std::this_thread::sleep_for(std::chrono::microseconds(duration));
 		}
+
+		static void yield()
+		{
+			std::this_thread::yield();
+		}
 	}
 
 	namespace Hal
