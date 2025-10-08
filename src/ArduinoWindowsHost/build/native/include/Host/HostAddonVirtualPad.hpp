@@ -29,11 +29,10 @@ namespace ArduinoWindowsHost
 		{
 			PadInstance.OnGamepadInput(reading);
 
-			std::lock_guard<std::mutex> lock(mutex);
-			if (!cancelled && running)
-			{
-				OnVirtualPadUpdate(PadInstance);
-			}
+			LoopHost::Post([this]()
+				{
+					OnVirtualPadUpdate(PadInstance);
+				});
 		}
 
 	protected:

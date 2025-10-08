@@ -60,6 +60,10 @@ namespace ArduinoWindowsHost
 			DirectxDrawSurface.SetSwapChainPanel(swapChainPanel);
 #endif
 			EngineRenderer.Start();
+
+#if defined(INTEGER_WORLD_PERFORMANCE_LOG)
+			IntegerWorldEngineLog.enable();
+#endif
 		}
 
 	protected:
