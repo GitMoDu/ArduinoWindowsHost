@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>ArduinoWindowsHost</id>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <authors>GitMoDu (batatas\t@\tgmail\tcom)</authors>
     <title>Arduino Windows Host</title>
     <description>Headers for the ArduinoWindowsHost namespace. Injects include path via props. Works with packages.config and PackageReference.</description>
