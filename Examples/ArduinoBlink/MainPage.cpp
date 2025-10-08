@@ -15,7 +15,7 @@ namespace winrt::ArduinoBlink::implementation
 		DataContext(ViewModel());
 
 		m_vmPropertyChangedToken = ViewModel().PropertyChanged(
-			Windows::UI::Xaml::Data::PropertyChangedEventHandler{
+			winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler{
 				[this](winrt::Windows::Foundation::IInspectable const&, Windows::UI::Xaml::Data::PropertyChangedEventArgs const& e)
 				{
 					if (e.PropertyName() == L"IsRunning")
