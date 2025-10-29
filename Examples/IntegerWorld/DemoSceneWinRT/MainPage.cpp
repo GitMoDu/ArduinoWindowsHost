@@ -10,6 +10,7 @@ using namespace winrt::Windows::UI::Xaml;
 namespace winrt::DemoSceneWinRT::implementation
 {
 	MainPage::MainPage()
+		: SerialTxAdapter(Serial)
 	{
 #ifndef INTEGER_WORLD_LIGHTS_SHADER_DEBUG
 		// Runtime toggles for ambient/emissive/diffuse/specular are not compiled in —
@@ -19,41 +20,100 @@ namespace winrt::DemoSceneWinRT::implementation
 		if (checkDiffuse())  checkDiffuse().IsEnabled(false);
 		if (checkSpecular()) checkSpecular().IsEnabled(false);
 #endif
+
+		// Ensure XAML holds a ref to the same VM instance
+		DataContext(ViewModel());
+
+		m_vmPropertyChangedToken = ViewModel().PropertyChanged(
+			winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler{
+				[this](winrt::Windows::Foundation::IInspectable const&, winrt::Windows::UI::Xaml::Data::PropertyChangedEventArgs const& e)
+				{
+					if (e.PropertyName() == L"IsRunning")
+					{
+						// Reflect VM state into UI
+						updateArduinoHostState(ViewModel().IsRunning());
+					}
+				}
+			});
 	}
 
 	MainPage::~MainPage()
 	{
-	}
+		// Break XAML bindings and release our strong ref early
+		DataContext(nullptr);
+		m_viewModel = nullptr;
 
+		if (m_vmPropertyChangedToken.value != 0)
+		{
+			ViewModel().PropertyChanged(m_vmPropertyChangedToken);
+			m_vmPropertyChangedToken = {};
+		}
+	}
 
 	void MainPage::runButtonControl_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		if (HostManager.isRunning())
-		{
-			updateArduinoHostState(false);
-			runButtonControl().Content(winrt::box_value(L"Start"));
-		}
-		else
-		{
-			updateArduinoHostState(true);
-			runButtonControl().Content(winrt::box_value(L"Stop"));
-		}
+		// Immediately disable the button to prevent multiple clicks.
+		runButtonControl().IsEnabled(false);
+
+		// Toggle the running state.
+		ViewModel().IsRunning(!ViewModel().IsRunning());
 	}
 
 	void MainPage::updateArduinoHostState(const bool enabled)
 	{
 		if (enabled)
 		{
-			const auto panel = swapChainPanel();
-			HostManager.Start();
-			HostManager.Host->StartDemo(panel);
+			runButtonControl().Content(winrt::box_value(L"Stop"));
+
+			// Get the SwapChainPanel for rendering
+			auto panel = swapChainPanel();
+
+			auto host = ViewModel().HostManager().Host;
+			if (host != nullptr)
+			{
+				host->StartDemo(panel);
+			}
+
 			initializeGamepadSupport();
+
+			SerialTxAdapter.Start(serialOutputTextBlock(), serialOutputScroll());
+			SerialTxAdapter.AutoScroll(autoScrollCheckBox().IsChecked().GetBoolean());
+			enginePanel().IsEnabled(true);
+
+			// Fragment shader defaults: Lights
+			if (fragmentShaderLights()) fragmentShaderLights().IsChecked(true);
+			// Lights shader group defaults: Light Source
+			if (lightsShaderLightSource()) lightsShaderLightSource().IsChecked(true);
+			// Ensure lights panel enabled (redundant if Checked event ran)
+			if (lightsShaderPanel()) lightsShaderPanel().IsEnabled(true);
+
+			// Shading mix defaults
+			if (checkAmbient())  checkAmbient().IsChecked(true);
+			if (checkEmissive()) checkEmissive().IsChecked(true);
+			if (checkDiffuse())  checkDiffuse().IsChecked(true);
+			if (checkSpecular()) checkSpecular().IsChecked(true);
+
+			// Light source defaults
+			if (checkRedLight())    checkRedLight().IsChecked(true);
+			if (checkGreenLight())  checkGreenLight().IsChecked(true);
+			if (checkGlobalLight()) checkGlobalLight().IsChecked(true);
+
+			// Animation default
+			if (checkAnimation()) checkAnimation().IsChecked(true);
+
+			// Field-of-View default
+			if (parameter1Slider()) parameter1Slider().Value(30);
 		}
 		else
 		{
 			uninitializeGamepadSupport();
-			HostManager.Stop();
+			SerialTxAdapter.Stop();
+			runButtonControl().Content(winrt::box_value(L"Start"));
+			enginePanel().IsEnabled(false);
 		}
+
+		// Re-enable the run button now that the state update is complete.
+		runButtonControl().IsEnabled(true);
 	}
 
 	void MainPage::initializeGamepadSupport()
@@ -86,9 +146,9 @@ namespace winrt::DemoSceneWinRT::implementation
 				for (auto const& gamepad : m_gamepads)
 				{
 					auto reading = gamepad.GetCurrentReading();
-					if (HostManager.isRunning())
+					if (ViewModel().IsRunning())
 					{
-						HostManager.Host->OnGamepadInput(reading);
+						ViewModel().HostManager().Host->OnGamepadInput(reading);
 					}
 				}
 			}, std::chrono::milliseconds(10));
@@ -104,210 +164,145 @@ namespace winrt::DemoSceneWinRT::implementation
 		m_gamepads.clear();
 	}
 
-	void MainPage::shaderGroupChecked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
+
+	void MainPage::fragmentShaderGroup_Checked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
 		using winrt::Windows::UI::Xaml::Controls::RadioButton;
 
 		auto radio = sender.try_as<RadioButton>();
 		if (!radio) return;
 
-		// Notify host of pipeline change (if running)
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
-			if (radio == shaderZ())
+			if (radio == fragmentShaderZ())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::ZShaderPipeline);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::FragmentShaderZ);
+				lightsShaderPanel().IsEnabled(false);
 			}
-			else if (radio == shaderNormal())
+			else if (radio == fragmentShaderWireframe())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::NormalShaderPipeline);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::FragmentShaderWireframe);
+				lightsShaderPanel().IsEnabled(true);
 			}
-			else if (radio == shaderPixel())
+			else if (radio == fragmentShaderLights())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::PixelShaderPipeline);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::FragmentShaderLights);
+				lightsShaderPanel().IsEnabled(true);
 			}
-		}
-
-		// Enable/disable scene shading controls based on selected pipeline
-		bool pixelPipelineSelected = (radio == shaderPixel());
-
-		if (checkScene()) checkScene().IsEnabled(pixelPipelineSelected);
-
-#ifdef INTEGER_WORLD_LIGHTS_SHADER_DEBUG
-		bool siblingsEnabled = false;
-		if (pixelPipelineSelected && checkScene())
-		{
-			auto isCheckedRef = checkScene().IsChecked();
-			if (isCheckedRef && isCheckedRef.Value())
-			{
-				siblingsEnabled = true;
-			}
-		}
-
-		if (checkAmbient())  checkAmbient().IsEnabled(siblingsEnabled);
-		if (checkEmissive()) checkEmissive().IsEnabled(siblingsEnabled);
-		if (checkDiffuse())  checkDiffuse().IsEnabled(siblingsEnabled);
-		if (checkSpecular()) checkSpecular().IsEnabled(siblingsEnabled);
-#endif
-	}
-
-	void MainPage::checkScene_Checked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
-	{
-#ifdef INTEGER_WORLD_LIGHTS_SHADER_DEBUG
-		// Only enable group if master is enabled (i.e., Pixel pipeline selected)
-		const bool allow = (checkScene() && checkScene().IsEnabled());
-		if (checkAmbient())  checkAmbient().IsEnabled(allow);
-		if (checkEmissive()) checkEmissive().IsEnabled(allow);
-		if (checkDiffuse())  checkDiffuse().IsEnabled(allow);
-		if (checkSpecular()) checkSpecular().IsEnabled(allow);
-#endif
-
-		if (HostManager.isRunning())
-		{
-			HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::SceneShaderEnabled, 1);
 		}
 	}
 
-	void MainPage::checkScene_Unchecked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
+	void MainPage::lightsShaderGroup_Checked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-#ifdef INTEGER_WORLD_LIGHTS_SHADER_DEBUG
-		// Disable the group UI regardless of pipeline
-		if (checkAmbient())  checkAmbient().IsEnabled(false);
-		if (checkEmissive()) checkEmissive().IsEnabled(false);
-		if (checkDiffuse())  checkDiffuse().IsEnabled(false);
-		if (checkSpecular()) checkSpecular().IsEnabled(false);
-#endif
-
-		if (HostManager.isRunning())
+		using winrt::Windows::UI::Xaml::Controls::RadioButton;
+		auto radio = sender.try_as<RadioButton>();
+		if (!radio) return;
+		if (ViewModel().IsRunning())
 		{
-			HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::SceneShaderEnabled, 0);
+			if (radio == lightsShaderNone())
+			{
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::LightsShaderNone);
+			}
+			else if (radio == lightsShaderNormal())
+			{
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::LightsShaderNormal);
+			}
+			else if (radio == lightsShaderLightSource())
+			{
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::LightsShaderLightSource);
+			}
 		}
 	}
 
-	void MainPage::sceneGroup_Checked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
+	void MainPage::lightsShaderMixGroup_Checked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-#ifdef INTEGER_WORLD_LIGHTS_SHADER_DEBUG
 		using winrt::Windows::UI::Xaml::Controls::CheckBox;
 
 		auto checkBox = sender.try_as<CheckBox>();
 		if (!checkBox) return;
 
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
 			if (checkBox == checkAmbient())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::AmbientShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::AmbientShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
 			}
 			else if (checkBox == checkEmissive())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::EmissiveShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::EmissiveShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
 			}
 			else if (checkBox == checkDiffuse())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::DiffuseShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::DiffuseShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
 			}
 			else if (checkBox == checkSpecular())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::SpecularShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::SpecularShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
 			}
 		}
-#endif
 	}
 
-	void MainPage::sceneGroup_Unchecked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
+	void MainPage::lightsShaderMixGroup_Unchecked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-#ifdef INTEGER_WORLD_LIGHTS_SHADER_DEBUG
-		using winrt::Windows::UI::Xaml::Controls::CheckBox;
-
-		auto checkBox = sender.try_as<CheckBox>();
-		if (!checkBox) return;
-
-		if (HostManager.isRunning())
-		{
-			if (checkBox == checkAmbient())
-			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::AmbientShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
-			}
-			else if (checkBox == checkEmissive())
-			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::EmissiveShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
-			}
-			else if (checkBox == checkDiffuse())
-			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::DiffuseShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
-			}
-			else if (checkBox == checkSpecular())
-			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::SpecularShadeEnabled, checkBox.IsChecked().Value() ? 1 : 0);
-			}
-		}
-#endif
+		lightsShaderMixGroup_Checked(sender, e);
 	}
 
-	void MainPage::lightsGroup_Checked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
+	void MainPage::lightsShaderSourceGroup_Checked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
 		using winrt::Windows::UI::Xaml::Controls::CheckBox;
 
 		auto checkBox = sender.try_as<CheckBox>();
 		if (!checkBox) return;
 
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
-			if (checkBox == checkLight1())
+			if (checkBox == checkRedLight())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::Light1Enabled, checkBox.IsChecked().Value() ? 1 : 0);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::LightRedEnabled, checkBox.IsChecked().Value() ? 1 : 0);
 			}
-			else if (checkBox == checkLight2())
+			else if (checkBox == checkGreenLight())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::Light2Enabled, checkBox.IsChecked().Value() ? 1 : 0);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::LightGreenEnabled, checkBox.IsChecked().Value() ? 1 : 0);
 			}
-			else if (checkBox == checkLightGlobal())
+			else if (checkBox == checkGlobalLight())
 			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::LightGlobalEnabled, checkBox.IsChecked().Value() ? 1 : 0);
+				ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::LightGlobalEnabled, checkBox.IsChecked().Value() ? 1 : 0);
 			}
 		}
 	}
 
-	void MainPage::lightsGroup_Unchecked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
+	void MainPage::lightsShaderSourceGroup_Unchecked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		using winrt::Windows::UI::Xaml::Controls::CheckBox;
+		lightsShaderSourceGroup_Checked(sender, e);
+	}
 
-		auto checkBox = sender.try_as<CheckBox>();
-		if (!checkBox) return;
+	bool MainPage::isLightsOrWireframeEnabled() const
+	{
+		return true;
+	}
 
-		if (HostManager.isRunning())
-		{
-			if (checkBox == checkLight1())
-			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::Light1Enabled, checkBox.IsChecked().Value() ? 1 : 0);
-			}
-			else if (checkBox == checkLight2())
-			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::Light2Enabled, checkBox.IsChecked().Value() ? 1 : 0);
-			}
-			else if (checkBox == checkLightGlobal())
-			{
-				HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::LightGlobalEnabled, checkBox.IsChecked().Value() ? 1 : 0);
-			}
-		}
+	bool MainPage::isLightsOrWireframeEnabled(winrt::Windows::Foundation::IReference<bool> const& wireframe, winrt::Windows::Foundation::IReference<bool> const& lights) const
+	{
+		const bool wf = wireframe && wireframe.Value();
+		const bool li = lights && lights.Value();
+		return wf || li;
 	}
 
 	void MainPage::checkAnimation_Checked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
-			HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::AnimationEnabled, 1);
+			ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::AnimationEnabled, 1);
 		}
 	}
 
 	void MainPage::checkAnimation_Unchecked(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
 	{
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
-			HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::AnimationEnabled, 0);
+			ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::AnimationEnabled, 0);
 		}
 	}
-
 
 	void MainPage::parameter1Slider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
 	{
@@ -329,9 +324,31 @@ namespace winrt::DemoSceneWinRT::implementation
 			parameter1Slider().Value(parameter1Slider().Minimum());
 		}
 
-		if (HostManager.isRunning())
+		if (ViewModel().IsRunning())
 		{
-			HostManager.Host->OnParameterInput(DemoSceneWindows::IntegerWorldInterface::FoV, (uint8_t)parameter1Slider().Value());
+			ViewModel().HostManager().Host->OnParameterInput(::DemoSceneWinRT::IntegerWorldInterface::FoV, (uint8_t)parameter1Slider().Value());
+		}
+	}
+
+	void MainPage::clearOutputButton_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
+	{
+		if (ViewModel().IsRunning())
+		{
+			Serial.flushTx();
+		}
+		else
+		{
+			serialOutputTextBlock().Text(L"");
+		}
+	}
+
+	void MainPage::autoScrollCheckBox_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::UI::Xaml::RoutedEventArgs const& e)
+	{
+		if (ViewModel().IsRunning())
+		{
+			SerialTxAdapter.AutoScroll(autoScrollCheckBox().IsChecked().GetBoolean());
 		}
 	}
 }
+
+

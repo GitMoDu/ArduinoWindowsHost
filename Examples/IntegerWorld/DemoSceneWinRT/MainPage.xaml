@@ -7,13 +7,37 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="SerialOutputBackgroundBrush" Color="#15000000"/>
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="SerialOutputBackgroundBrush" Color="#20FFFFFF"/>
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="SerialOutputBackgroundBrush" Color="Transparent"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="400" />
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="175"/>
+            <ColumnDefinition Width="160"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0">
+        <Grid Grid.Column="0"
+              Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*" />
@@ -21,55 +45,143 @@
 
             <Button x:Name="runButtonControl"
                      Grid.Row="0"
-                     IsTabStop="False"
                      Content="Start"
                      Width="100"
-                     HorizontalAlignment="Left"
+                     HorizontalAlignment="Center"
                      Margin="20,10,20,10"
                      Click="runButtonControl_Click"/>
 
             <ScrollViewer x:Name="controlsScrollable"
                    Grid.Row="1"
+                   Grid.Column="1"
                    Margin="0,10,0,0"
                    HorizontalScrollBarVisibility="Disabled"
                    VerticalScrollBarVisibility="Auto"
                    VerticalScrollMode="Enabled"
                    HorizontalScrollMode="Disabled"
                    VerticalAlignment="Stretch">
-                <StackPanel x:Name="enginePanel" Orientation="Vertical" VerticalAlignment="Top">
-                    <CheckBox x:Name="checkAnimation"
-                       IsTabStop="False"
+
+                <ContentControl IsEnabled="False" x:Name="enginePanel">
+                    <StackPanel  Orientation="Vertical" VerticalAlignment="Top">
+                        <CheckBox x:Name="checkAnimation"
                        IsChecked="True"
-                       Content="Animation Enable"
+                       Content="Animation"
                        Checked="checkAnimation_Checked"
                        Unchecked="checkAnimation_Unchecked"
                        Margin="20,0,0,0"/>
 
-                    <TextBlock Text="Field-of-View" Grid.Row="0" HorizontalAlignment="Left" Margin="20,20,0,5"/>
-                    <Slider x:Name="parameter1Slider" Grid.Row="1" IsTabStop="False" Minimum="0" Maximum="100" Value="50" HorizontalAlignment="Stretch" Margin="20,00,20,10" ValueChanged="parameter1Slider_ValueChanged"/>
+                        <StackPanel Orientation="Vertical" x:Name="FieldOfViewGroup">
+                            <TextBlock Text="Field-of-View" Grid.Row="0" HorizontalAlignment="Left" Margin="20,10,0,5"/>
+                            <Slider x:Name="parameter1Slider" Grid.Row="1" Minimum="0" Maximum="100" Value="30" HorizontalAlignment="Stretch" Margin="20,00,20,10" ValueChanged="parameter1Slider_ValueChanged"/>
+                        </StackPanel>
 
-                    <TextBlock Text="Pixel Shader" FontWeight="Bold" Grid.Row="0" HorizontalAlignment="Left" Grid.ColumnSpan="2" Margin="20,0,0,10"/>
-                    <RadioButton x:Name="shaderZ" Content="Z-Depth" GroupName="PixelShaderGroup" Margin="20,0,10,0" Checked="shaderGroupChecked" />
-                    <RadioButton x:Name="shaderNormal" Content="Surface Normal" GroupName="PixelShaderGroup" Margin="20,0,10,0" Checked="shaderGroupChecked" />
-                    <RadioButton x:Name="shaderPixel" Content="Fragment Shader" GroupName="PixelShaderGroup" Margin="20,0,10,0" IsChecked="True" Checked="shaderGroupChecked" />
+                        <StackPanel Orientation="Vertical" Margin="20,0,0,10" x:Name="fragmentShaderGroup">
+                            <TextBlock Text="Fragment Shader" FontWeight="Bold" Grid.Row="0" HorizontalAlignment="Left" Grid.ColumnSpan="2" Margin="0,0,0,5"/>
+                            <RadioButton x:Name="fragmentShaderZ" Content="Z-Depth" GroupName="FragmentShaderGroup" Checked="fragmentShaderGroup_Checked" />
+                            <RadioButton x:Name="fragmentShaderWireframe" Content="Wireframe" GroupName="FragmentShaderGroup"  Checked="fragmentShaderGroup_Checked" />
+                            <RadioButton x:Name="fragmentShaderLights" Content="Lights" GroupName="FragmentShaderGroup" IsChecked="True" Checked="fragmentShaderGroup_Checked" />
+                        </StackPanel>
 
-                    <CheckBox x:Name="checkScene" FontWeight="Bold" IsTabStop="False" IsChecked="True" Content="Light Shading" Margin="20,20,20,10" Checked="checkScene_Checked" Unchecked="checkScene_Unchecked"/>
-                    <CheckBox x:Name="checkAmbient" IsTabStop="False" IsChecked="True" Content="Ambient" Margin="30,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked" />
-                    <CheckBox x:Name="checkEmissive" IsTabStop="False" IsChecked="True" Content="Emissive" Margin="30,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked"  />
-                    <CheckBox x:Name="checkDiffuse" IsTabStop="False" IsChecked="True" Content="Diffuse" Margin="30,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked" />
-                    <CheckBox x:Name="checkSpecular" IsTabStop="False" IsChecked="True" Content="Specular" Margin="30,0,20,10" Checked="sceneGroup_Checked" Unchecked="sceneGroup_Unchecked"  />
+                        <ContentControl x:Name="lightsShaderPanel">
+                            <StackPanel Orientation="Vertical" Margin="20,0,0,5" x:Name="lightsShaderGroup">
+                                <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                                    <TextBlock Text="Scene Shader" FontWeight="Bold" Grid.Row="0" HorizontalAlignment="Left" Grid.ColumnSpan="2" Margin="0,0,0,5"/>
+                                    <RadioButton x:Name="lightsShaderNone" Content="None" GroupName="LightsShaderGroup"  Checked="lightsShaderGroup_Checked" />
+                                    <RadioButton x:Name="lightsShaderNormal" Content="Surface Normal" GroupName="LightsShaderGroup" Checked="lightsShaderGroup_Checked" />
+                                    <RadioButton x:Name="lightsShaderLightSource" Content="Lights" GroupName="LightsShaderGroup"  IsChecked="True" Checked="lightsShaderGroup_Checked" />
+                                </StackPanel>
 
-                    <TextBlock Text="Light Sources" Margin="20,10,0,10" FontWeight="Bold"/>
-                    <CheckBox x:Name="checkLight1" Content="Red Light" IsChecked="True" Margin="20,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked"/>
-                    <CheckBox x:Name="checkLight2" Content="Green Light" IsChecked="True" Margin="20,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked" />
-                    <CheckBox x:Name="checkLightGlobal" Content="Global Light" IsChecked="True" Margin="20,0,0,5" Checked="lightsGroup_Checked" Unchecked="lightsGroup_Unchecked"/>
-                </StackPanel>
+                                <StackPanel Orientation="Vertical" x:Name="lightShadingGroup" >
+                                    <ContentControl IsEnabled="{Binding ElementName=lightsShaderLightSource, Path=IsChecked}">
+                                        <StackPanel Orientation="Vertical" x:Name="lightOptionsGroup">
+                                            <TextBlock Text="Shading" Margin="10,0,0,0" FontWeight="Bold"/>
+                                            <CheckBox x:Name="checkAmbient" IsChecked="True" Content="Ambient" Margin="10,10,20,10" Checked="lightsShaderMixGroup_Checked" Unchecked="lightsShaderMixGroup_Unchecked" />
+                                            <CheckBox x:Name="checkEmissive" IsChecked="True" Content="Emissive" Margin="10,0,20,10" Checked="lightsShaderMixGroup_Checked" Unchecked="lightsShaderMixGroup_Unchecked"  />
+                                            <CheckBox x:Name="checkDiffuse" IsChecked="True" Content="Diffuse" Margin="10,0,20,10" Checked="lightsShaderMixGroup_Checked" Unchecked="lightsShaderMixGroup_Unchecked" />
+                                            <CheckBox x:Name="checkSpecular" IsChecked="True" Content="Specular" Margin="10,0,20,10" Checked="lightsShaderMixGroup_Checked" Unchecked="lightsShaderMixGroup_Unchecked"  />
+
+                                            <TextBlock Text="Light Sources" Margin="10,10,0,10" FontWeight="Bold"/>
+                                            <CheckBox x:Name="checkRedLight" Content="Red Light" IsChecked="True" Margin="10,0,0,5" Checked="lightsShaderSourceGroup_Checked" Unchecked="lightsShaderSourceGroup_Unchecked"/>
+                                            <CheckBox x:Name="checkGreenLight" Content="Green Light" IsChecked="True" Margin="10,0,0,5" Checked="lightsShaderSourceGroup_Checked" Unchecked="lightsShaderSourceGroup_Unchecked" />
+                                            <CheckBox x:Name="checkGlobalLight" Content="Global Light" IsChecked="True" Margin="10,0,0,5" Checked="lightsShaderSourceGroup_Checked" Unchecked="lightsShaderSourceGroup_Unchecked"/>
+                                        </StackPanel>
+                                    </ContentControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </ContentControl>
+                    </StackPanel>
+                </ContentControl>
             </ScrollViewer>
         </Grid>
 
         <SwapChainPanel x:Name="swapChainPanel"
            Grid.Column="1"
+           Margin="10"
            VerticalAlignment="Stretch"
            HorizontalAlignment="Stretch"/>
+
+        <ScrollViewer x:Name="serialOutputScroll"
+                        Background="{ThemeResource SerialOutputBackgroundBrush}"
+                        Padding="0,2,0,0"
+                        Grid.Column="1"
+                        Grid.Row="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+
+            <TextBlock x:Name="serialOutputTextBlock"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"
+                       Margin="20,10,20,10"
+                       FontFamily="Cascadia Mono"
+                       FontSize="11"
+                       IsTextSelectionEnabled="True"
+                       FontWeight="Normal"/>
+        </ScrollViewer>
+
+        <Grid  Grid.Row="1"
+               Grid.Column="1"
+               HorizontalAlignment="Right"
+               VerticalAlignment="Top"
+               Height="Auto" Padding="5,5,5,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <CheckBox x:Name="autoScrollCheckBox"
+               Grid.Column="0"
+               IsChecked="True"
+               MinWidth="10"
+               Margin="0"
+               Padding="5,0,5,0"
+               VerticalAlignment="Top"
+               HorizontalAlignment="Stretch"
+               VerticalContentAlignment="Center"
+               FontFamily="Cascadia Mono"
+               FontSize="11"
+               ToolTipService.ToolTip="Auto scroll serial output"
+               ToolTipService.Placement="Bottom"
+               Content="Auto Scroll"
+               Click="autoScrollCheckBox_Click"/>
+
+            <Button x:Name="clearOutputButton"
+                     Grid.Column="1"
+                     IsTabStop="True"
+                     Padding="0,0,0,0"
+                     Width="42"
+                     Height="30"
+                     Background="Transparent"
+                     ToolTipService.ToolTip="Clear serial output"
+                     ToolTipService.Placement="Bottom"
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Top"
+                     Margin="0,0,0,0"
+                     Click="clearOutputButton_Click">
+                <TextBlock Text="🗑" 
+                     FontSize="16" 
+                     FontFamily="Cascadia Mono" 
+                     FontWeight="Light"/>
+            </Button>
+        </Grid>
     </Grid>
 </Page>
