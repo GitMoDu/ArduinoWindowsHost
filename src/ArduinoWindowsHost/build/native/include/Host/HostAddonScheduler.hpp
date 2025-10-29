@@ -53,11 +53,11 @@ namespace ArduinoWindowsHost
 
 #if defined(_TASK_TICKLESS)
 			const uint32_t idleTime = SchedulerBase.getNextRun();
-			if (idleTime > 1)
+			if (idleTime > 0)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
-			else if (idleTime == 1)
+			else
 #endif
 			{
 #if defined(_TASK_DO_NOT_YIELD)
