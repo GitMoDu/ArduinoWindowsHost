@@ -1,15 +1,14 @@
 #pragma once
 
-#define INTEGER_WORLD_PERFORMANCE_LOG // Enable engine render status logging.
 
 #include "pch.h"
 
 #include <ArduinoWindowsHost.h>
 #include <ArduinoIntegerWorldWindows.h>
 
-#include "../Scene/AnimatedDemoScene.h"
+#include <IntegerWorldExperimental.h>
 
-namespace DemoSceneWindows
+namespace DemoSceneWinRT
 {
 	using namespace ArduinoWindowsHost;
 
@@ -17,16 +16,21 @@ namespace DemoSceneWindows
 	{
 		FoV,
 		AnimationEnabled,
-		PixelShaderPipeline,
-		SceneShaderEnabled,
-		ZShaderPipeline,
-		NormalShaderPipeline,
+		FragmentShaderZ,
+		FragmentShaderWireframe,
+		FragmentShaderLights,
+
+		LightsShaderLightSource,
+		LightsShaderNormal,
+		LightsShaderNone,
+
 		AmbientShadeEnabled,
 		EmissiveShadeEnabled,
 		DiffuseShadeEnabled,
 		SpecularShadeEnabled,
-		Light1Enabled,
-		Light2Enabled,
+
+		LightRedEnabled,
+		LightGreenEnabled,
 		LightGlobalEnabled
 	};
 
@@ -55,16 +59,15 @@ namespace DemoSceneWindows
 	private:
 		using Base = HostAddonIntegerWorld<IntegerWorldBase, screenWidth, screenHeight, maxObjectCount, maxOrderedPrimitives, batchSize>;
 
+	protected:
+		using Base::SchedulerBase;
+
 	private:
 		// Objects animator for the world.
 		AnimatedDemoScene DemoScene;
 
 		// Free camera controller.
 		Assets::Cameras::FreeCameraTask<> CameraUpdater;
-
-#if defined(INTEGER_WORLD_PERFORMANCE_LOG)
-		PerformanceLogTask<4000> IntegerWorldEngineLog;
-#endif
 
 	private: // Virtual pad buttons parsers.
 		VirtualPad::ButtonParser::Action AButton{};
@@ -78,27 +81,29 @@ namespace DemoSceneWindows
 			: Base()
 			, DemoScene(SchedulerBase)
 			, CameraUpdater(SchedulerBase, EngineRenderer.GetCameraControls())
-#if defined(INTEGER_WORLD_PERFORMANCE_LOG)
-			, IntegerWorldEngineLog(SchedulerBase, EngineRenderer)
-#endif
 		{
 		}
 
 		void StartDemo(const winrt::Windows::UI::Xaml::Controls::SwapChainPanel& swapChainPanel)
 		{
-			// Start the 3D engine with panel for output.
-			Base::StartEngine(swapChainPanel);
+			LoopHost::PostAndWait([this, &swapChainPanel]()
+				{
+					// Start the 3D engine with panel for output.
+					Base::StartEngine(swapChainPanel);
 
-			// Setup and start the demo scene.
-			if (!DemoScene.Start(EngineRenderer, screenWidth, screenHeight))
-			{
-				halt();
-			}
+					// Start the demo scene.
+					if (!DemoScene.Start(EngineRenderer, screenWidth, screenHeight))
+					{
+						halt();
+					}
 
-			// Reset the camera position and filters.
-			CameraUpdater.ResetFilters();
+					// Reset the camera position and filters.
+					CameraUpdater.ResetFilters();
 
-			Serial.println(F("Integer World DirectX Engine"));
+					FrustumLock = false;
+
+					Serial.println(F("Integer World DirectX Engine"));
+				});
 		}
 
 	private:
@@ -132,23 +137,29 @@ namespace DemoSceneWindows
 			case IntegerWorldInterface::SpecularShadeEnabled:
 				DemoScene.SetSpecularShadeEnabled(value > 0);
 				break;
-			case IntegerWorldInterface::SceneShaderEnabled:
-				DemoScene.SetSceneShader(value > 0);
+			case IntegerWorldInterface::FragmentShaderZ:
+				DemoScene.SetFragmentShaderZ();
 				break;
-			case IntegerWorldInterface::PixelShaderPipeline:
-				DemoScene.SetPixelShader();
+			case IntegerWorldInterface::FragmentShaderWireframe:
+				DemoScene.SetFragmentShaderWireframe();
 				break;
-			case IntegerWorldInterface::ZShaderPipeline:
-				DemoScene.SetZShader();
+			case IntegerWorldInterface::FragmentShaderLights:
+				DemoScene.SetFragmentShaderLights();
 				break;
-			case IntegerWorldInterface::NormalShaderPipeline:
-				DemoScene.SetNormalShader();
+			case IntegerWorldInterface::LightsShaderLightSource:
+				DemoScene.SetLightsShaderLightSource();
 				break;
-			case IntegerWorldInterface::Light1Enabled:
-				DemoScene.SetLight1Enabled(value > 0);
+			case IntegerWorldInterface::LightsShaderNormal:
+				DemoScene.SetLightsShaderNormal();
 				break;
-			case IntegerWorldInterface::Light2Enabled:
-				DemoScene.SetLight2Enabled(value > 0);
+			case IntegerWorldInterface::LightsShaderNone:
+				DemoScene.SetLightsShaderNone();
+				break;
+			case IntegerWorldInterface::LightRedEnabled:
+				DemoScene.SetLightRedEnabled(value > 0);
+				break;
+			case IntegerWorldInterface::LightGreenEnabled:
+				DemoScene.SetLightGreenEnabled(value > 0);
 				break;
 			case IntegerWorldInterface::LightGlobalEnabled:
 				DemoScene.SetLightGlobalEnabled(value > 0);
@@ -157,6 +168,9 @@ namespace DemoSceneWindows
 				break;
 			}
 		}
+
+
+		bool FrustumLock = false;
 
 		void OnVirtualPadUpdate(VirtualPad::WindowsPad::VirtualPadType& pad) final
 		{
@@ -186,10 +200,14 @@ namespace DemoSceneWindows
 					CameraUpdater.Set(pad.Joy1X(), pad.Joy1Y(), ((int32_t)pad.L2() - pad.R2()) / 2, pad.Joy2X(), pad.Joy2Y());
 				}
 
+#if defined(INTEGER_WORLD_FRUSTUM_DEBUG)
 				if (AButton.ActionDown())
 				{
 					DemoScene.CaptureViewFrustum();
+					FrustumLock = !FrustumLock;
+					EngineRenderer.SetFrustumLock(FrustumLock);
 				}
+#endif
 
 				if (R1Button.ActionDown() && !L1Button.ActionDown())
 				{
