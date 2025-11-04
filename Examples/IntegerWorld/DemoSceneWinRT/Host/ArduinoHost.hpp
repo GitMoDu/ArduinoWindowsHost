@@ -120,7 +120,7 @@ namespace DemoSceneWinRT
 			switch (parameter)
 			{
 			case IntegerWorldInterface::FoV:
-				EngineRenderer.SetFov((uint32_t(UFRACTION16_1X) * (100 - value)) / 100);
+				EngineRenderer.SetFov((uint32_t(UFRACTION16_1X) * value) / 100);
 				break;
 			case IntegerWorldInterface::AnimationEnabled:
 				DemoScene.SetAnimationEnabled(value > 0);
