@@ -22,6 +22,21 @@ An example project, [ArduinoBlink](https://github.com/GitMoDu/ArduinoBlink), dem
 
 ![ArduinoBlink demo](Examples/ArduinoBlink/media/ArduinoBlinkWinRT.gif)
 
+      void loop() {
+			digitalWrite(LED_BUILTIN, HIGH);
+			delay(500);
+
+			if (TickTock)
+				Serial.println(F("\tTock"));
+			else
+				Serial.println(F("\tTick"));
+
+			TickTock = !TickTock;
+
+			digitalWrite(LED_BUILTIN, LOW);
+			delay(500);
+		}
+
 Features of the Blink sample:
 
 - Implements `setup()`, `loop()`, and `serialEvent()`
